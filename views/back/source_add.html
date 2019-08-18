@@ -1,0 +1,123 @@
+{% extends "back/base.html"%}
+
+<!--新增的样式-->
+{% block style %}
+{% endblock %}
+
+<!--主要内容-->
+{% block body %}
+<div class="container-fluid">
+    <div class="body advert">
+        <!-- 面包屑 -->
+        <ol class="breadcrumb">
+            <li><a href="/back/source_list">资源文章管理</a></li>
+            <li class="active">添加文章</li>
+        </ol>
+        <div class="advert-add">
+            <form action="/back/source/api/add" method="post" class="form-horizontal" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="" class="col-md-3 control-label">标题</label>
+                    <div class="col-md-5">
+                        <input name="title" type="text" class="form-control input-sm" placeholder="请填写文章标题" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="" class="col-md-3 control-label">作者</label>
+                    <div class="col-md-5">
+                        <input name="author" type="text" class="form-control input-sm" placeholder="请填写作者" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="" class="col-md-3 control-label">缩略图</label>
+                    <div class="col-md-5">
+                        <input name="small_img" type="file" class="form-control input-sm" placeholder="请填写缩略图" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="" class="col-md-3 control-label">价格</label>
+                    <div class="col-md-5">
+                        <input name="price" type="number" class="form-control input-sm" placeholder="填写价格" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="" class="col-md-3 control-label">文章内容</label>
+                    <div class="col-md-8">
+                        <div id="editor"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <input type="submit" class="btn btn-danger btn-sm pull-right" value="添加文章">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!--脚本-->
+{% block script %}
+<script src="./js/wangEditor/wangEditor.js"></script>
+<script>
+    $(function () {
+        // 1. 配置编辑器
+        let E = window.wangEditor;
+        let editor = new E('#editor');
+        // 2. 自定义上传图片事件
+        editor.customConfig.customUploadImg = function (files, insert) {
+            // 2.1 上传图片到服务器
+            if (files.length > 0) { // 有图片文件
+                // 取出图片
+                let formData = new FormData();
+                formData.append('image_url', files[0]);
+                // 发起ajax请求
+                $.ajax({
+                    url: 'http://localhost:3000/back/source/api/add_img',
+                    type: 'post',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        if (data.status === 200) { // 上传成功
+                            insert(data.result);
+                        }
+                    }
+                });
+            }
+        };
+        editor.create();
+
+        // 3. 提交文章内容
+        $('form').on('submit', function () {
+            // 3.1 获取编辑器中的内容
+            let content = editor.txt.html();
+            if(content){
+                // 3.2 初始化上传数据
+                let formData = new FormData($(this).get(0));
+                formData.append('content', content);
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type:$(this).attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        console.log(data);
+                        if(data.status === 200){ // 添加成功
+                            alert('资源文章添加成功!');
+                            window.location.href = '/back/source_list'
+                        }else {
+                            alert('资源文章添加失败!');
+                        }
+                    }
+                });
+            }else {
+                alert('请输入文章的内容!');
+            }
+            return false;
+        })
+    });
+</script>
+{% endblock %}

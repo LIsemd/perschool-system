@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>撩课-后台管理系统</title>
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="node_modules/nprogress/nprogress.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <!-- 登录 -->
+    <div class="login">
+        <div class="login-wrap">
+            <div class="avatar">
+                <img src="./uploads/logo.jpg" class="img-circle" alt="">
+            </div>
+            <form action="" class="col-md-offset-1 col-md-10">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-addon">
+                        <i class="fa fa-id-card-o"></i>
+                    </span>
+                    <input id="user_name" type="text" class="form-control" placeholder="用户名" required>
+                </div>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-addon">
+                        <i class="fa fa-key"></i>
+                    </span>
+                    <input id="user_pwd" type="password" class="form-control" placeholder="密码" required>
+                </div>
+                <button type="button" class="btn btn-lg btn-danger btn-block btn-login">登 录</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="js/md5.js"></script>
+    <script>
+        $(function () {
+            $('.btn-login').on('click', function () {
+                const S_KEY = '@WaLk1314?.Md5|==#'
+                let user_name = $('#user_name').val()
+                let user_pwd = $('#user_pwd').val()
+                let md5_user_pwd = md5(user_pwd + S_KEY)
+                $.ajax({
+                    url: 'http://localhost:3000/user/api/login',
+                    type: 'post',
+                    data: `user_name=${user_name}&user_pwd=${md5_user_pwd}`,
+                    success: function (data) {
+                        if (data.status === 200) {
+                            // 保存token到本地
+                            localStorage.setItem('result',JSON.stringify(data.result))
+                            window.location.href = '/back'
+                        } else {
+                            $('#user_name').val('')
+                            $('#user_pwd').val('')
+                        }
+                    }
+                })
+            })
+        })
+    </script>
+</body>
+</html>

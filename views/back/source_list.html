@@ -1,0 +1,87 @@
+{% extends "back/base.html" %}
+
+<!--新增样式-->
+{% block style %}
+
+{% endblock %}
+
+<!--主要内容-->
+{% block body %}
+<div class="container-fluid">
+    <div class="body advert">
+        <ol class="breadcrumb">
+            <li><a href="/back/source_list">资源文章管理</a></li>
+            <li class="active">文章列表</li>
+        </ol>
+        <div class="page-title">
+            <a href="/back/source_add" class="btn btn-danger btn-sm pull-right">添加文章</a>
+        </div>
+        <div class="panel panel-default">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <td>序号</td>
+                    <th>标题</th>
+                    <th>缩略图</th>
+                    <th>是否收藏</th>
+                    <th>价格</th>
+                    <th>作者</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for source in sources %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ source.title }}</td>
+                        <td>
+                            <img src="/uploads/{{ source.small_img }}" alt="" style="width: 200px; margin: 0 auto">
+                        </td>
+                        <td>{{ source.is_store }}</td>
+                        <td>{{ source.price }}</td>
+                        <td>{{ source.author }}</td>
+                        <td>
+                            <a data-id="{{ source._id }}" class="btn btn-primary btn-xs btn-edit">编辑</a>
+                            <a data-id="{{ source._id }}" class="btn btn-danger btn-xs btn-del">删除</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!--脚本-->
+{% block script %}
+<script>
+    $(function () {
+        // 点击修改按钮
+        $('.btn-edit').on('click', function () {
+            let sourceId = $(this).attr('data-id')
+            // 传递Id
+            window.location.href = `/back/source_edit?sid=${sourceId}`
+        })
+        // 点击删除按钮
+        $('.btn-del').on('click', function () {
+            let sowingId = $(this).attr('data-id')
+            // 发起ajax请求
+            $.ajax({
+                url: 'http://localhost:3000/back/source/api/remove/' + sowingId,
+                type: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status === 200) {
+                        alert('删除成功！')
+                        window.location.reload()
+                    } else {
+                        alert('删除失败！')
+                        window.location.reload()
+                    }
+                }
+            })
+        })
+    })
+</script>
+{% endblock %}

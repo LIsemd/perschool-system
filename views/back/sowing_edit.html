@@ -1,0 +1,186 @@
+{% extends "back/base.html" %}
+
+<!--新增样式-->
+{% block style %}
+<style>
+    .preview {
+        width: 500px;
+        height: 90px;
+        padding: 0;
+        margin-left: 15px;
+        overflow: hidden;
+        position: relative;
+    }
+    .preview:hover .cover {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    .preview:hover .fa-upload {
+        color: rgba(240, 240, 240, 0.8);
+    }
+    #upfile{
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 9;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+    }
+    .cover {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        line-height: 90px;
+        font-size: 40px;
+        background-color: rgba(0, 0, 0, 0);
+        transition: all 0.3s;
+    }
+    .fa-upload {
+        color: rgba(240, 240, 240, 0);
+    }
+</style>
+{% endblock %}
+
+<!--主要内容-->
+{% block body %}
+<div class="container-fluid">
+    <div class="body advert">
+        <!-- 面包屑 -->
+        <ol class="breadcrumb">
+            <li><a href="/back/s_list">轮播图管理</a></li>
+            <li class="active">修改轮播图</li>
+        </ol>
+        <div class="advert-add">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!--脚本-->
+{% block script %}
+<script>
+    $(function () {
+        // 1.加载数据
+        loadData()
+    })
+
+    function loadData() {
+        // 1.截取Id
+        let url = window.location.search,
+            sowingId = ''
+        // 有问号
+        if (url.indexOf('?') !== -1) {
+            sowingId = url.substr(url.indexOf('=') + 1)
+        }
+        // 2.发起ajax请求
+        $.ajax({
+            url: 'http://localhost:3000/back/sowing/api/single/' + sowingId,
+            type: 'get',
+            dataType: 'json',
+            success: function (data) {
+                // 注入数据
+                let tpl = `
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label for="" class="col-md-3 control-label">图片名称</label>
+                        <div class="col-md-5">
+                            <input type="text" id="image_title" name="image_title" class="form-control input-sm" placeholder="填写图片名称" required
+                                value="${data.result.image_title}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="col-md-3 control-label">图片路径</label>
+                         <div class="col-md-2 preview">
+                            <img id="image_url" src="/uploads/${data.result.image_url}" style="border: 1px solid #e0e0e0;">
+                            <input type="file" id="upfile">
+                            <div class="cover">
+                                <i class="fa fa-upload"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="col-md-3 control-label">跳转链接</label>
+                        <div class="col-md-5">
+                            <input type="text" id="image_link" name="image_link" class="form-control input-sm" placeholder="填写跳转链接" required
+                                value="${data.result.image_link}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="col-md-3 control-label">上架时间</label>
+                        <div class="col-md-5">
+                            <input type="date" id="s_time" name="s_time" class="form-control input-sm" placeholder="填写上架时间" required
+                                value="${data.result.s_time}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="col-md-3 control-label">下架时间</label>
+                        <div class="col-md-5">
+                            <input type="date" id="e_time" name="e_time" class="form-control input-sm" placeholder="填写上架时间" required
+                                value="${data.result.e_time}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-8">
+                            <input id="btn_edit" type="button" class="btn btn-danger btn-sm pull-right" value="修改轮播图">
+                        </div>
+                    </div>
+                </form>`
+                $('.advert-add').html(tpl)
+                // 上传图片
+                $('#upfile').on('change', function () {
+                    // 获取用户上传的文件
+                    let file = $(this).get(0).files[0]
+                    // 读取这个文件
+                    let reader = new FileReader()
+                    if (file) {
+                        reader.readAsDataURL(file)
+                    }
+                    // 监听文件是否读取完毕
+                    reader.onloadend = function () {
+                        $('#image_url').attr('src',this.result)
+                    }
+                })
+                // 提交表单
+                $('#btn_edit').on('click', function () {
+                    // 上传的修改数据
+                    let id = data.result._id,
+                        image_title = $('#image_title').val(),
+                        image_url = $('#upfile').get(0).files[0] || data.result.image_url,
+                        image_link = $('#image_link').val(),
+                        s_time = $('#s_time').val(),
+                        e_time = $('#e_time').val()
+
+                    // 创建FormData对象
+                    let formData = new FormData()
+                    formData.append('id', id)
+                    formData.append('image_title', image_title)
+                    formData.append('image_url', image_url)
+                    formData.append('image_link', image_link)
+                    formData.append('s_time', s_time)
+                    formData.append('e_time', e_time)
+
+                    // 发起ajax请求
+                    $.ajax({
+                        url: '/back/sowing/api/edit',
+                        type: 'post',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (data) {
+                            if (data.status === 200) {
+                                alert('轮播图修改成功！')
+                                window.location.href = '/back/s_list'
+                            } else {
+                                alert('轮播图修改失败！')
+                            }
+                        }
+                    })
+                })
+            }
+        })
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "back/base.html" %}
+
+<!--新增样式-->
+{% block style %}
+
+{% endblock %}
+
+<!--主要内容-->
+{% block body %}
+<div class="container-fluid">
+    <div class="body advert">
+        <ol class="breadcrumb">
+            <li><a href="/back/s_list">轮播图管理</a></li>
+            <li class="active">轮播图列表</li>
+        </ol>
+        <div class="page-title">
+            <a href="/back/s_add" class="btn btn-danger btn-sm pull-right">添加轮播图</a>
+        </div>
+        <div class="panel panel-default">
+            {% if sowings.length > 0 %}
+                <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <td>序号</td>
+                    <th>图片名称</th>
+                    <th>图片缩略图</th>
+                    <th>图片跳转链接</th>
+                    <th>上架时间</th>
+                    <th>下架时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for sowing in sowings %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ sowing.image_title }}</td>
+                        <td>
+                            <img src="/uploads/{{ sowing.image_url }}" alt="" style="width: 200px; margin: 0 auto">
+                        </td>
+                        <td>{{ sowing.image_link }}</td>
+                        <td>{{ sowing.s_time }}</td>
+                        <td>{{ sowing.e_time }}</td>
+                        <td>
+                            <a data-id="{{ sowing._id }}" class="btn btn-primary btn-xs btn-edit">编辑</a>
+                            <a data-id="{{ sowing._id }}" class="btn btn-danger btn-xs btn-del">删除</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <div style="text-align: center; padding: 30px 0">
+                    <img src="./images/liao.jpg" alt="" style="width: 200px; margin: 0 auto">
+                    <h3>当前还没有轮播图哟~</h3>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!--脚本-->
+{% block script %}
+<script>
+    $(function () {
+        // 点击修改按钮
+        $('.btn-edit').on('click', function () {
+            let sowingId = $(this).attr('data-id')
+            // 传递Id
+            window.location.href = `/back/s_edit?sid=${sowingId}`
+        })
+        // 点击删除按钮
+        $('.btn-del').on('click', function () {
+            let sowingId = $(this).attr('data-id')
+            // 发起ajax请求
+            $.ajax({
+                url: 'http://localhost:3000/back/sowing/api/remove/' + sowingId,
+                type: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status === 200) {
+                        alert('删除成功！')
+                        window.location.reload()
+                    } else {
+                        alert('删除失败！')
+                        window.location.reload()
+                    }
+                }
+            })
+        })
+    })
+</script>
+{% endblock %}
